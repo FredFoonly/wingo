@@ -38,6 +38,12 @@ import (
 	"github.com/FredFoonly/wingo/xclient"
 )
 
+const (
+	wingo_socket = "WINGO_SOCKET"
+	wingo_http_protocol = "http"
+	wingo_http = "WINGO_HTTP"
+)
+
 var (
 	flagGoMaxProcs     = runtime.NumCPU()
 	flagLogLevel       = 2
@@ -50,6 +56,9 @@ var (
 	flagWingoRestarted = false
 	flagShowSocket     = false
 	flagSocketPath     = ""
+	flagServeHttp      = false
+	flagShowHttp       = false
+	flagHttpAddr       = ""
 )
 
 func init() {
@@ -87,10 +96,20 @@ func init() {
 
 	flag.BoolVar(&flagShowSocket, "show-socket", flagShowSocket,
 		"When set, the command will detect if Wingo is already running,\n"+
-			"and if so, outputs the file path to the current socket.")
+			"and if so, outputs the file path to the current UDS IPC socket.")
 
 	flag.StringVar(&flagSocketPath, "socket-path", flagSocketPath,
-		"When set, supplies the directory for the UDS socket.")
+		"When set, supplies the directory for the UDS IPC socket.")
+
+	flag.BoolVar(&flagServeHttp, "serve-http", flagServeHttp,
+		"When set, serve status and state over HTTP")
+
+	flag.BoolVar(&flagShowHttp, "show-http", flagShowHttp,
+		"When set, the command will detect if Wingo is already running,\n"+
+			"and if so, outputs the URL to the current http server.")
+
+	flag.StringVar(&flagHttpAddr, "http-addr", flagHttpAddr,
+		"When set, supplies the address for the http server.")
 
 	flag.StringVar(&flagCpuProfile, "cpuprofile", flagCpuProfile,
 		"When set, a CPU profile will be written to the file specified.")
@@ -125,6 +144,11 @@ func main() {
 		showSocketPath(X)
 		return
 	}
+	if flagShowHttp {
+		showHttpAddr(X)
+		return
+	}
+
 
 	// Do this first! Attempt to retrieve window manager ownership.
 	// This includes waiting for any existing window manager to die.
@@ -158,7 +182,14 @@ func main() {
 	setSupported()
 
 	socketPath := socketFilePath(X)
-	os.Setenv("WINGO_SOCKET", socketPath)
+	os.Setenv(wingo_socket, socketPath)
+	httpAddr := ""
+	if flagServeHttp {
+		httpAddr = httpAddress()
+		os.Setenv(wingo_http, httpAddr)
+	} else if len(os.Getenv(wingo_http)) > 0 {
+		os.Setenv(wingo_http, "") // change to os.Unsetenv() after go 1.4
+	}
 
 	// Start up the IPC command listener.
 	go ipc(X, socketPath)
@@ -166,7 +197,9 @@ func main() {
 	// And start up the IPC event notifier.
 	go event.Notifier(X, socketPath)
 
-	go http.ListenAndServe(":8080", nil)
+	if flagServeHttp && len(httpAddr) > 0 {
+		go http.ListenAndServe(httpAddr, nil)
+	}
 
 	// Just before starting the main event loop, check to see if there are
 	// any clients that already exist that we should manage.
@@ -297,6 +330,21 @@ func usage() {
 			strings.Replace(fg.Usage, "\n", "\n\t", -1))
 	})
 	os.Exit(1)
+}
+
+func showHttpAddr(X *xgbutil.XUtil) {
+	currentWM, err := ewmh.GetEwmhWM(X)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if strings.ToLower(currentWM) != "wingo" {
+		fmt.Fprintf(os.Stderr, "Could not detect a Wingo instance. "+
+			"(Found '%s' instead.)\n", currentWM)
+		os.Exit(1)
+	}
+	fmt.Println(wingo_http_protocol + "://" + httpAddress())
+	os.Exit(0)
 }
 
 func showSocketPath(X *xgbutil.XUtil) {

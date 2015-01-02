@@ -180,20 +180,19 @@ func (d *Data) parseLine(section, line string, lnum int) (string, error) {
 }
 
 func (d *Data) varReplace(val string) string {
-	replace := func(varName string) string {
-		if varVal, ok := d.variables[varName[1:]]; ok {
-			return varVal
-		} else if varVal = os.Getenv(varName[1:]); len(varVal) > 0 {
-			return varVal
+	newval := val
+	for i:=0; i < 16 && strings.Contains(newval, "$"); i++ {
+		replace := func(varName string) string {
+			if varVal, ok := d.variables[varName[1:]]; ok {
+				return varVal
+			} else if varVal = os.Getenv(varName[1:]); len(varVal) > 0 {
+				return varVal
+			}
+			return newval
 		}
-		return val
+		newval = findVar.ReplaceAllStringFunc(newval, replace)
 	}
-	nSubst := 16
-	for nSubst > 0 && strings.Contains(val, "$") {
-		val = findVar.ReplaceAllStringFunc(val, replace)
-		nSubst--
-	}
-	return val
+	return newval
 }
 
 func (d *Data) Sections() []string {
