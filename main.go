@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -12,6 +13,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"net/http"
+	_ "expvar"
 
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
@@ -22,17 +25,17 @@ import (
 	"github.com/BurntSushi/xgbutil/mousebind"
 	"github.com/BurntSushi/xgbutil/xevent"
 
-	"github.com/BurntSushi/wingo/commands"
-	"github.com/BurntSushi/wingo/cursors"
-	"github.com/BurntSushi/wingo/event"
-	"github.com/BurntSushi/wingo/focus"
-	"github.com/BurntSushi/wingo/frame"
-	"github.com/BurntSushi/wingo/hook"
-	"github.com/BurntSushi/wingo/logger"
-	"github.com/BurntSushi/wingo/misc"
-	"github.com/BurntSushi/wingo/stack"
-	"github.com/BurntSushi/wingo/wm"
-	"github.com/BurntSushi/wingo/xclient"
+	"github.com/FredFoonly/wingo/commands"
+	"github.com/FredFoonly/wingo/cursors"
+	"github.com/FredFoonly/wingo/event"
+	"github.com/FredFoonly/wingo/focus"
+	"github.com/FredFoonly/wingo/frame"
+	"github.com/FredFoonly/wingo/hook"
+	"github.com/FredFoonly/wingo/logger"
+	"github.com/FredFoonly/wingo/misc"
+	"github.com/FredFoonly/wingo/stack"
+	"github.com/FredFoonly/wingo/wm"
+	"github.com/FredFoonly/wingo/xclient"
 )
 
 var (
@@ -46,6 +49,7 @@ var (
 	flagCpuProfile     = ""
 	flagWingoRestarted = false
 	flagShowSocket     = false
+	flagSocketPath     = ""
 )
 
 func init() {
@@ -64,12 +68,12 @@ func init() {
 		"Override the location of the configuration files. When this\n"+
 			"is not set, the following paths (roughly) will be checked\n"+
 			"in order: $XDG_CONFIG_DIR/wingo, /etc/xdg/wingo,\n"+
-			"$GOPATH/src/github.com/BurntSushi/wingo/config")
+			"$GOPATH/src/github.com/FredFoonly/wingo/config")
 	flag.StringVar(&flagDataDir, "data-dir", flagDataDir,
 		"Override the location of the data files (images/fonts). When this\n"+
 			"is not set, the following paths (roughly) will be checked\n"+
 			"in order: $XDG_DATA_HOME/wingo, /usr/local/share, /usr/share,\n"+
-			"$GOPATH/src/github.com/BurntSushi/wingo/data")
+			"$GOPATH/src/github.com/FredFoonly/wingo/data")
 	flag.BoolVar(&flagWriteConfig, "write-config", flagWriteConfig,
 		"Writes a fresh set of configuration files to $XDG_CONFIG_HOME/wingo\n"+
 			"if XDG_CONFIG_HOME is set. Otherwise, configuration files\n"+
@@ -84,6 +88,9 @@ func init() {
 	flag.BoolVar(&flagShowSocket, "show-socket", flagShowSocket,
 		"When set, the command will detect if Wingo is already running,\n"+
 			"and if so, outputs the file path to the current socket.")
+
+	flag.StringVar(&flagSocketPath, "socket-path", flagSocketPath,
+		"When set, supplies the directory for the UDS socket.")
 
 	flag.StringVar(&flagCpuProfile, "cpuprofile", flagCpuProfile,
 		"When set, a CPU profile will be written to the file specified.")
@@ -150,11 +157,16 @@ func main() {
 	// Tell everyone what we support.
 	setSupported()
 
+	socketPath := socketFilePath(X)
+	os.Setenv("WINGO_SOCKET", socketPath)
+
 	// Start up the IPC command listener.
-	go ipc(X)
+	go ipc(X, socketPath)
 
 	// And start up the IPC event notifier.
-	go event.Notifier(X, socketFilePath(X))
+	go event.Notifier(X, socketPath)
+
+	go http.ListenAndServe(":8080", nil)
 
 	// Just before starting the main event loop, check to see if there are
 	// any clients that already exist that we should manage.

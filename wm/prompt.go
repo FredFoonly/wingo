@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/BurntSushi/wingo/focus"
-	"github.com/BurntSushi/wingo/prompt"
+	"github.com/FredFoonly/wingo/focus"
+	"github.com/FredFoonly/wingo/prompt"
 )
 
 type AllPrompts struct {

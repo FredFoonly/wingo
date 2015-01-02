@@ -154,7 +154,6 @@ func (d *Data) parseLine(section, line string, lnum int) (string, error) {
 
 	key := strings.TrimSpace(splitted[0])
 	val := strings.TrimSpace(splitted[1])
-
 	// If the key doesn't exist, allocate a slice
 	if _, ok := d.data[section][key]; !ok {
 		d.data[section][key] = make(Value, 0)
@@ -162,8 +161,20 @@ func (d *Data) parseLine(section, line string, lnum int) (string, error) {
 
 	// good to go, add the new key!
 	// don't forget to do variable replacement on val!
-	d.data[section][key] = append(d.data[section][key],
-		d.varReplace(val))
+	// handle multi-command keys!
+	if strings.HasPrefix(val, "{") {
+		val = strings.TrimPrefix(val, "{")
+		val = strings.TrimSuffix(val, "}")
+		valpieces := strings.Split(val, ";")
+		for _, valpiece := range valpieces {
+			valpiece = strings.TrimSpace(valpiece)
+			d.data[section][key] = append(d.data[section][key],
+				d.varReplace(valpiece))
+		}
+	} else {
+		d.data[section][key] = append(d.data[section][key],
+			d.varReplace(val))
+	}
 
 	return section, nil
 }

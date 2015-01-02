@@ -7,11 +7,12 @@ import (
 	"net"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/BurntSushi/xgbutil"
 
-	"github.com/BurntSushi/wingo/commands"
-	"github.com/BurntSushi/wingo/logger"
+	"github.com/FredFoonly/wingo/commands"
+	"github.com/FredFoonly/wingo/logger"
 )
 
 // ipc starts the command server via a unix domain socket. It accepts
@@ -21,9 +22,7 @@ import (
 //
 // Note that every message between the server and client MUST be null
 // terminated.
-func ipc(X *xgbutil.XUtil) {
-	fpath := socketFilePath(X)
-
+func ipc(X *xgbutil.XUtil, fpath string) {
 	// Remove the domain socket if it already exists.
 	os.Remove(fpath) // don't care if there's an error
 
@@ -50,6 +49,12 @@ func socketFilePath(X *xgbutil.XUtil) string {
 	xc := X.Conn()
 	name := fmt.Sprintf(":%d.%d", xc.DisplayNumber, xc.DefaultScreen)
 
+	// Take the socket path from the command line if possible
+	if len(flagSocketPath) > 0 {
+		return path.Join(strings.TrimSpace(flagSocketPath), name)
+	}
+
+	// We weren't handed a path on a plate, so have to synthesize it as best we can
 	var runtimeDir string
 	xdgRuntime := os.Getenv("XDG_RUNTIME_DIR")
 	if len(xdgRuntime) > 0 {

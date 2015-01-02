@@ -8,8 +8,8 @@ import (
 	"github.com/BurntSushi/xgbutil/ewmh"
 	"github.com/BurntSushi/xgbutil/xwindow"
 
-	"github.com/BurntSushi/wingo/event"
-	"github.com/BurntSushi/wingo/workspace"
+	"github.com/FredFoonly/wingo/event"
+	"github.com/FredFoonly/wingo/workspace"
 )
 
 func ewmhClientList() {

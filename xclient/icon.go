@@ -3,8 +3,8 @@ package xclient
 import (
 	"github.com/BurntSushi/xgbutil/xgraphics"
 
-	"github.com/BurntSushi/wingo/logger"
-	"github.com/BurntSushi/wingo/wm"
+	"github.com/FredFoonly/wingo/logger"
+	"github.com/FredFoonly/wingo/wm"
 )
 
 func (c *Client) Icon(width, height int) *xgraphics.Image {

@@ -6,9 +6,9 @@ import (
 	"github.com/BurntSushi/xgbutil/ewmh"
 	"github.com/BurntSushi/xgbutil/icccm"
 
-	"github.com/BurntSushi/wingo/event"
-	"github.com/BurntSushi/wingo/layout"
-	"github.com/BurntSushi/wingo/wm"
+	"github.com/FredFoonly/wingo/event"
+	"github.com/FredFoonly/wingo/layout"
+	"github.com/FredFoonly/wingo/wm"
 )
 
 func (c *Client) handleProperty(name string) {

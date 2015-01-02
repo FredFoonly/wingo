@@ -11,13 +11,13 @@ import (
 	"github.com/BurntSushi/xgbutil/xrect"
 	"github.com/BurntSushi/xgbutil/xwindow"
 
-	"github.com/BurntSushi/wingo/event"
-	"github.com/BurntSushi/wingo/frame"
-	"github.com/BurntSushi/wingo/hook"
-	"github.com/BurntSushi/wingo/logger"
-	"github.com/BurntSushi/wingo/stack"
-	"github.com/BurntSushi/wingo/wm"
-	"github.com/BurntSushi/wingo/workspace"
+	"github.com/FredFoonly/wingo/event"
+	"github.com/FredFoonly/wingo/frame"
+	"github.com/FredFoonly/wingo/hook"
+	"github.com/FredFoonly/wingo/logger"
+	"github.com/FredFoonly/wingo/stack"
+	"github.com/FredFoonly/wingo/wm"
+	"github.com/FredFoonly/wingo/workspace"
 )
 
 const (

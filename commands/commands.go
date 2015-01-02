@@ -3,6 +3,7 @@ package commands
 import (
 	"bytes"
 	"fmt"
+//	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -17,12 +18,12 @@ import (
 	"github.com/BurntSushi/xgbutil/xprop"
 	"github.com/BurntSushi/xgbutil/xrect"
 
-	"github.com/BurntSushi/wingo/focus"
-	"github.com/BurntSushi/wingo/logger"
-	"github.com/BurntSushi/wingo/misc"
-	"github.com/BurntSushi/wingo/wm"
-	"github.com/BurntSushi/wingo/workspace"
-	"github.com/BurntSushi/wingo/xclient"
+	"github.com/FredFoonly/wingo/focus"
+	"github.com/FredFoonly/wingo/logger"
+	"github.com/FredFoonly/wingo/misc"
+	"github.com/FredFoonly/wingo/wm"
+	"github.com/FredFoonly/wingo/workspace"
+	"github.com/FredFoonly/wingo/xclient"
 )
 
 // Env declares all available commands. Any command not in
@@ -1044,7 +1045,6 @@ func (cmd Shell) Run() gribble.Value {
 		var stderr bytes.Buffer
 
 		cmd.Command = fixScannerBugs(cmd.Command)
-
 		time.Sleep(time.Microsecond)
 		logger.Message.Printf("%s -c [%s]", wm.Config.Shell, cmd.Command)
 		shellCmd := exec.Command(wm.Config.Shell, "-c", cmd.Command)

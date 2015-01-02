@@ -5,9 +5,9 @@ import (
 
 	"github.com/BurntSushi/xgbutil/xrect"
 
-	"github.com/BurntSushi/wingo/layout"
-	"github.com/BurntSushi/wingo/wm"
-	"github.com/BurntSushi/wingo/workspace"
+	"github.com/FredFoonly/wingo/layout"
+	"github.com/FredFoonly/wingo/wm"
+	"github.com/FredFoonly/wingo/workspace"
 )
 
 func (c *Client) CheckNewWorkspace() {
