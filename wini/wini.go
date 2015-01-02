@@ -183,10 +183,15 @@ func (d *Data) varReplace(val string) string {
 	replace := func(varName string) string {
 		if varVal, ok := d.variables[varName[1:]]; ok {
 			return varVal
+		} else if varVal = os.Getenv(varName[1:]); len(varVal) > 0 {
+			return varVal
 		}
 		return val
 	}
-	return findVar.ReplaceAllStringFunc(val, replace)
+	for strings.Contains(val, "$") {
+		val = findVar.ReplaceAllStringFunc(val, replace)
+	}
+	return val
 }
 
 func (d *Data) Sections() []string {
