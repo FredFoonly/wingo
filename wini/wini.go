@@ -188,8 +188,10 @@ func (d *Data) varReplace(val string) string {
 		}
 		return val
 	}
-	for strings.Contains(val, "$") {
+	nSubst := 16
+	for nSubst > 0 && strings.Contains(val, "$") {
 		val = findVar.ReplaceAllStringFunc(val, replace)
+		nSubst--
 	}
 	return val
 }
