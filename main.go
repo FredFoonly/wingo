@@ -1,7 +1,7 @@
-
 package main
 
 import (
+	_ "expvar"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -13,8 +13,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"net/http"
-	_ "expvar"
 
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/xproto"
@@ -39,9 +37,9 @@ import (
 )
 
 const (
-	wingo_socket = "WINGO_SOCKET"
+	wingo_socket        = "WINGO_SOCKET"
 	wingo_http_protocol = "http"
-	wingo_http = "WINGO_HTTP"
+	wingo_http          = "WINGO_HTTP"
 )
 
 var (
@@ -149,7 +147,6 @@ func main() {
 		return
 	}
 
-
 	// Do this first! Attempt to retrieve window manager ownership.
 	// This includes waiting for any existing window manager to die.
 	// 'own' also sets up handlers for quitting when a window manager tries
@@ -198,7 +195,7 @@ func main() {
 	go event.Notifier(X, socketPath)
 
 	if flagServeHttp && len(httpAddr) > 0 {
-		go http.ListenAndServe(httpAddr, nil)
+		go serveHttp(httpAddr)
 	}
 
 	// Just before starting the main event loop, check to see if there are

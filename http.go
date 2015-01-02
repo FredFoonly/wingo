@@ -1,18 +1,8 @@
 package main
 
 import (
-	//"bufio"
-	//"fmt"
-	//"io"
-	//"net"
-	//"os"
-	//"path"
+	"net/http"
 	"strings"
-
-	//"github.com/BurntSushi/xgbutil"
-
-	//"github.com/FredFoonly/wingo/commands"
-	//"github.com/FredFoonly/wingo/logger"
 )
 
 func httpAddress() string {
@@ -23,4 +13,8 @@ func httpAddress() string {
 
 	// We weren't handed a path on a plate, so have to synthesize it as best we can
 	return ":8080"
+}
+
+func serveHttp(httpAddr string) {
+	go http.ListenAndServe(httpAddr, nil)
 }
