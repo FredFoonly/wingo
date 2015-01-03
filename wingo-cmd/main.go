@@ -19,6 +19,10 @@ import (
 	"github.com/FredFoonly/wingo/commands"
 )
 
+const (
+	wingo_socket = "WINGO_SOCKET"
+)
+
 var (
 	flagFileInput         = ""
 	flagListCommands      = false
@@ -91,6 +95,12 @@ func main() {
 }
 
 func socketFilePath() string {
+	// try the fast way first
+	sock_path := os.Getenv(wingo_socket)
+	if len(sock_path) > 0 {
+		return strings.TrimSpace(sock_path)
+	}
+	// fall back to the slow way
 	c := cmd.New("wingo", "--show-socket")
 	if err := c.Run(); err != nil {
 		log.Fatal(err)
