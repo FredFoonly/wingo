@@ -38,25 +38,27 @@ import (
 
 const (
 	wingo_socket        = "WINGO_SOCKET"
+	wingo_notify_socket = "WINGO_NOTIFY_SOCKET"
 	wingo_http_protocol = "http"
 	wingo_http          = "WINGO_HTTP"
 )
 
 var (
-	flagGoMaxProcs     = runtime.NumCPU()
-	flagLogLevel       = 2
-	flagLogColors      = false
-	flagReplace        = false
-	flagConfigDir      = ""
-	flagDataDir        = ""
-	flagWriteConfig    = false
-	flagCpuProfile     = ""
-	flagWingoRestarted = false
-	flagShowSocket     = false
-	flagSocketPath     = ""
-	flagServeHttp      = false
-	flagShowHttp       = false
-	flagHttpAddr       = ""
+	flagGoMaxProcs       = runtime.NumCPU()
+	flagLogLevel         = 2
+	flagLogColors        = false
+	flagReplace          = false
+	flagConfigDir        = ""
+	flagDataDir          = ""
+	flagWriteConfig      = false
+	flagCpuProfile       = ""
+	flagWingoRestarted   = false
+	flagShowSocket       = false
+	flagShowNotifySocket = false
+	flagSocketPath       = ""
+	flagServeHttp        = false
+	flagShowHttp         = false
+	flagHttpAddr         = ""
 )
 
 func init() {
@@ -96,6 +98,10 @@ func init() {
 		"When set, the command will detect if Wingo is already running,\n"+
 			"and if so, outputs the file path to the current UDS IPC socket.")
 
+	flag.BoolVar(&flagShowNotifySocket, "show-notify-socket", flagShowNotifySocket,
+		"When set, the command will detect if Wingo is already running,\n"+
+			"and if so, outputs the file path to the current UDS notification socket.")
+
 	flag.StringVar(&flagSocketPath, "socket-path", flagSocketPath,
 		"When set, supplies the directory for the UDS IPC socket.")
 
@@ -120,7 +126,7 @@ func init() {
 	logger.LevelSet(flagLogLevel)
 
 	// If the log level is 0, don't show XGB log output either.
-	if flagLogLevel == 0 || flagShowSocket {
+	if flagLogLevel == 0 || flagShowSocket || flagShowNotifySocket || flagShowHttp {
 		xgb.Logger = log.New(ioutil.Discard, "", 0)
 	}
 }
@@ -140,6 +146,10 @@ func main() {
 
 	if flagShowSocket {
 		showSocketPath(X)
+		return
+	}
+	if flagShowNotifySocket {
+		showNotifySocketPath(X)
 		return
 	}
 	if flagShowHttp {
@@ -179,7 +189,9 @@ func main() {
 	setSupported()
 
 	socketPath := socketFilePath(X)
+	notifySocketPath := socketPath + "-notify"
 	os.Setenv(wingo_socket, socketPath)
+	os.Setenv(wingo_notify_socket, notifySocketPath)
 	httpAddr := ""
 	if flagServeHttp {
 		httpAddr = httpAddress()
@@ -192,7 +204,7 @@ func main() {
 	go ipc(X, socketPath)
 
 	// And start up the IPC event notifier.
-	go event.Notifier(X, socketPath)
+	go event.Notifier(X, notifySocketPath)
 
 	if flagServeHttp && len(httpAddr) > 0 {
 		go serveHttp(httpAddr)
@@ -356,5 +368,20 @@ func showSocketPath(X *xgbutil.XUtil) {
 		os.Exit(1)
 	}
 	fmt.Println(socketFilePath(X))
+	os.Exit(0)
+}
+
+func showNotifySocketPath(X *xgbutil.XUtil) {
+	currentWM, err := ewmh.GetEwmhWM(X)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if strings.ToLower(currentWM) != "wingo" {
+		fmt.Fprintf(os.Stderr, "Could not detect a Wingo instance. "+
+			"(Found '%s' instead.)\n", currentWM)
+		os.Exit(1)
+	}
+	fmt.Println(socketFilePath(X) + "-notify")
 	os.Exit(0)
 }

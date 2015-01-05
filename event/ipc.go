@@ -16,7 +16,6 @@ import (
 var subs subscriptions
 
 func Notifier(X *xgbutil.XUtil, fp string) {
-	fp = fp + "-notify"
 	os.Remove(fp)
 
 	listener, err := net.Listen("unix", fp)

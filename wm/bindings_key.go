@@ -61,7 +61,7 @@ func (kcmd keyCommand) attach() {
 	} else {
 		run := func() {
 			go func() {
-				_, err := gribbleEnv.Run(kcmd.cmdStr)
+				_, err := gribbleEnv.RunMany(kcmd.cmdStr)
 				if err != nil {
 					logger.Warning.Println(err)
 				}
