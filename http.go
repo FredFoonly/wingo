@@ -27,7 +27,7 @@ func serveHttp(httpAddr string) {
 
 	g.HandleFunc("/Windows/Current", doGetActiveWindow)
 
-	g.("GET").HandleFunc("/Clients", doGetAllClients)
+	g.HandleFunc("/Clients", doGetAllClients)
 	g.HandleFunc("/Clients/{client}/Height", doGetClientHeight)
 	g.HandleFunc("/Clients/{client}/Name", doGetClientName)
 	g.HandleFunc("/Clients/{client}/States", doGetClientStates)
